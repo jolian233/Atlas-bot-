@@ -34,11 +34,18 @@ def send_welcome(message):
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     try:
-        # Enviamos un mensaje de espera o procesamos la respuesta con Gemini
-        chat_response = model.generate_content(message.text)
-        bot.reply_to(message, chat_response.text)
+        # Usamos streaming para que la respuesta sea inmediata
+        response = model.generate_content(message.text, stream=True)
+        
+        # Juntamos los fragmentos rápidamente
+        full_text = ""
+        for chunk in response:
+            full_text += chunk.text
+            
+        bot.reply_to(message, full_text)
     except Exception as e:
         bot.reply_to(message, f"Ocurrió un error procesando tu mensaje: {str(e)}")
+        
 
 # Iniciamos el bot en modo Infinity para que corra de forma continua
 if __name__ == "__main__":
